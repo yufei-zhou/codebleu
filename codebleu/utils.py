@@ -20,16 +20,17 @@ AVAILABLE_LANGS = [
     "go",
     "ruby",
     "rust",
+    "prolog"
 ]  # keywords available
 
 
 def pad_sequence(
-    sequence,
-    n,
-    pad_left=False,
-    pad_right=False,
-    left_pad_symbol=None,
-    right_pad_symbol=None,
+        sequence,
+        n,
+        pad_left=False,
+        pad_right=False,
+        left_pad_symbol=None,
+        right_pad_symbol=None,
 ):
     """
     Returns a padded sequence of items before ngram extraction.
@@ -66,12 +67,12 @@ def pad_sequence(
 
 
 def ngrams(
-    sequence,
-    n,
-    pad_left=False,
-    pad_right=False,
-    left_pad_symbol=None,
-    right_pad_symbol=None,
+        sequence,
+        n,
+        pad_left=False,
+        pad_right=False,
+        left_pad_symbol=None,
+        right_pad_symbol=None,
 ):
     """
     Return the ngrams generated from a sequence of items, as an iterator.
@@ -173,6 +174,10 @@ def get_tree_sitter_language(lang: str) -> Language:
             import tree_sitter_rust
 
             return Language(tree_sitter_rust.language())
+        elif lang == "prolog":
+            import tree_sitter_prolog
+
+            return Language(tree_sitter_prolog.prolog())
         else:
             assert False, "Not reachable"
     except ImportError:

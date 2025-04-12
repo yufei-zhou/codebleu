@@ -13,7 +13,7 @@ def DFG_python(root_node, index_to_code, states):
     def_statement = ["default_parameter"]
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -200,7 +200,7 @@ def DFG_java(root_node, index_to_code, states):
     do_first_statement = []
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -379,7 +379,7 @@ def DFG_csharp(root_node, index_to_code, states):
     do_first_statement = []
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -559,7 +559,7 @@ def DFG_ruby(root_node, index_to_code, states):
     do_first_statement = []
     def_statement = ["keyword_parameter"]
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         states = states.copy()
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
@@ -738,7 +738,7 @@ def DFG_go(root_node, index_to_code, states):
     do_first_statement = []
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -883,7 +883,7 @@ def DFG_php(root_node, index_to_code, states):
     do_first_statement = []
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -1069,7 +1069,7 @@ def DFG_javascript(root_node, index_to_code, states):
     do_first_statement = []
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -1225,7 +1225,7 @@ def DFG_rust(root_node, index_to_code, states):
     do_first_statement = []
     states = states.copy()
     if (
-        len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
+            len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal"]
     ) and root_node.type != "comment":
         idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
         if root_node.type == code:
@@ -1385,3 +1385,149 @@ def DFG_rust(root_node, index_to_code, states):
                 DFG += temp
 
         return sorted(DFG, key=lambda x: x[1]), states
+
+
+def DFG_prolog(root_node, index_to_code, states):
+    states = states.copy()
+
+    if len(root_node.children) == 0 or root_node.type in ["string_literal", "string", "character_literal", "atom",
+                                                          "variable_term", "integer", "float_number"]:
+        if root_node.type == "comment":
+            return [], states
+        idx, code = index_to_code[(root_node.start_point, root_node.end_point)]
+        if root_node.type == code:
+            return [], states
+        elif code in states:
+            return [(code, idx, "comesFrom", [code], states[code].copy())], states
+        else:
+            if root_node.type == "variable_term":
+                states[code] = [idx]
+            return [(code, idx, "comesFrom", [], [])], states
+
+    if root_node.type == "clause_term":
+        head_children = []
+        body_children = []
+        separator_found = False
+        for child in root_node.children:
+            if len(child.children) == 0:
+                child_idx, child_code = index_to_code.get((child.start_point, child.end_point), (None, None))
+                if child_code == ":-":
+                    separator_found = True
+                    continue
+            if not separator_found:
+                head_children.append(child)
+            else:
+                body_children.append(child)
+
+        dfg_head = []
+        states_head = states.copy()
+        for child in head_children:
+            temp, states_head = DFG_prolog(child, index_to_code, states_head)
+            dfg_head += temp
+
+        dfg_body = []
+        states_body = states.copy()
+        for child in body_children:
+            temp, states_body = DFG_prolog(child, index_to_code, states_body)
+            dfg_body += temp
+
+        merged_states = {}
+        for s in [states_head, states_body]:
+            for key, val in s.items():
+                if key in merged_states:
+                    merged_states[key] = sorted(list(set(merged_states[key] + val)))
+                else:
+                    merged_states[key] = val.copy()
+
+        head_var_indices = []
+        for child in head_children:
+            head_var_indices += tree_to_variable_index(child, index_to_code)
+        body_var_indices = []
+        for child in body_children:
+            body_var_indices += tree_to_variable_index(child, index_to_code)
+        head_vars = {}
+        for index in head_var_indices:
+            idx_token, code_token = index_to_code[index]
+            head_vars.setdefault(code_token, []).append(index)
+        body_vars = {}
+        for index in body_var_indices:
+            idx_token, code_token = index_to_code[index]
+            body_vars.setdefault(code_token, []).append(index)
+        computed_edges = []
+        for var, head_indexes in head_vars.items():
+            if var in body_vars:
+                right_tokens = body_vars[var]
+                body_token_positions = [index_to_code[x][1] for x in right_tokens]
+                body_token_codes = [index_to_code[x][0] for x in right_tokens]
+                for token_index in head_indexes:
+                    idx_token, code_token = index_to_code[token_index]
+                    computed_edges.append(
+                        (code_token, idx_token, "computedFrom", body_token_positions, body_token_codes))
+                    merged_states[code_token] = [idx_token]
+        dfg = sorted(dfg_head + dfg_body + computed_edges, key=lambda x: x[1])
+        return dfg, merged_states
+
+    if root_node.type == "directive_term":
+        head_children = []
+        body_children = []
+        separator_found = False
+        for child in root_node.children:
+            if len(child.children) == 0:
+                child_idx, child_code = index_to_code.get((child.start_point, child.end_point), (None, None))
+                if child_code == ":-":
+                    separator_found = True
+                    continue
+            if not separator_found:
+                head_children.append(child)
+            else:
+                body_children.append(child)
+        dfg_head = []
+        states_head = states.copy()
+        for child in head_children:
+            temp, states_head = DFG_prolog(child, index_to_code, states_head)
+            dfg_head += temp
+        dfg_body = []
+        states_body = states.copy()
+        for child in body_children:
+            temp, states_body = DFG_prolog(child, index_to_code, states_body)
+            dfg_body += temp
+        merged_states = {}
+        for s in [states_head, states_body]:
+            for key, val in s.items():
+                if key in merged_states:
+                    merged_states[key] = sorted(list(set(merged_states[key] + val)))
+                else:
+                    merged_states[key] = val.copy()
+        head_var_indices = []
+        for child in head_children:
+            head_var_indices += tree_to_variable_index(child, index_to_code)
+        body_var_indices = []
+        for child in body_children:
+            body_var_indices += tree_to_variable_index(child, index_to_code)
+        head_vars = {}
+        for index in head_var_indices:
+            idx_token, code_token = index_to_code[index]
+            head_vars.setdefault(code_token, []).append(index)
+        body_vars = {}
+        for index in body_var_indices:
+            idx_token, code_token = index_to_code[index]
+            body_vars.setdefault(code_token, []).append(index)
+        computed_edges = []
+        for var, head_indexes in head_vars.items():
+            if var in body_vars:
+                right_tokens = body_vars[var]
+                body_token_positions = [index_to_code[x][1] for x in right_tokens]
+                body_token_codes = [index_to_code[x][0] for x in right_tokens]
+                for token_index in head_indexes:
+                    idx_token, code_token = index_to_code[token_index]
+                    computed_edges.append(
+                        (code_token, idx_token, "computedFrom", body_token_positions, body_token_codes))
+                    merged_states[code_token] = [idx_token]
+        dfg = sorted(dfg_head + dfg_body + computed_edges, key=lambda x: x[1])
+        return dfg, merged_states
+
+    dfg = []
+    for child in root_node.children:
+        temp, states = DFG_prolog(child, index_to_code, states)
+        dfg += temp
+    return sorted(dfg, key=lambda x: x[1]), states

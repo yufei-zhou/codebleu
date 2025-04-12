@@ -13,6 +13,7 @@ from .parser import (
     DFG_python,
     DFG_ruby,
     DFG_rust,
+    DFG_prolog,
     index_to_code_token,
     remove_comments_and_docstrings,
     tree_to_token_index,
@@ -30,6 +31,7 @@ dfg_function = {
     "c": DFG_csharp,  # XLCoST uses C# parser for C
     "cpp": DFG_csharp,  # XLCoST uses C# parser for C++
     "rust": DFG_rust,
+    "prolog": DFG_prolog
 }
 
 

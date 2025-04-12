@@ -12,10 +12,10 @@ PACKAGE_DIR = Path(__file__).parent
 
 
 def main(
-    ref_files: List[str],
-    hyp_file: str,
-    lang: str,
-    weights: Tuple[float, float, float, float] = (0.25, 0.25, 0.25, 0.25),
+        ref_files: List[str],
+        hyp_file: str,
+        lang: str,
+        weights: Tuple[float, float, float, float] = (0.25, 0.25, 0.25, 0.25),
 ) -> None:
     pre_references = [[x.strip() for x in open(file, "r", encoding="utf-8").readlines()] for file in ref_files]
     hypothesis = [x.strip() for x in open(hyp_file, "r", encoding="utf-8").readlines()]
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         "--lang",
         type=str,
         required=True,
-        choices=["java", "js", "c_sharp", "php", "go", "python", "ruby", "rust"],
+        choices=["java", "js", "c_sharp", "php", "go", "python", "ruby", "rust", "prolog"],
     )
     parser.add_argument("--params", type=str, default="0.25,0.25,0.25,0.25", help="alpha, beta and gamma")
 
